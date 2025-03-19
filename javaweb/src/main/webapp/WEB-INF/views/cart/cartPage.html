@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>장바구니</title>
+  <link rel="stylesheet" th:href="@{/static/cart/css/style.css}" />
+</head>
+<body>
+<th:block layout:fragment="content">
+  <div class="cart-content">
+    <h2>장바구니</h2>
+    
+    <div class="cart-container">
+      <!-- 왼쪽: 상품 목록 -->
+      <div class="cart-left">
+	  <div class="product-box" th:each="item : ${cartItems}">
+	    <input type="checkbox" name="selectedIds" th:value="${item.id}">
+	    
+	    <div class="product-title" th:text="${item.productName}">상품 이름</div>
+	    
+	    <img class="product-image" th:src="@{'/static/' + ${item.imageUrl}}" alt="상품 이미지">
+	    
+	    <div class="product-price" th:text="${#numbers.formatInteger(item.price, 0, 'COMMA')} + ' 원'">가격</div>
+	  </div>
+	</div>
+	
+      <!-- 오른쪽: 선택된 상품 및 결제 요약 영역 -->
+      <div class="cart-right">
+        <h3>선택된 상품</h3>
+        <div class="selected-items">
+          <ul>
+            <!-- 초기에는 아무것도 표시되지 않음 -->
+          </ul>
+        </div>
+        <div class="total-price">총 가격: 0 원</div>
+        
+        <!-- 결제하기 버튼; 클릭 시 pay.html로 이동 (선택이 없으면 팝업) -->
+        <a href="pay.html" id="checkoutLink">
+          <button type="button" class="checkout-btn" id="checkoutButton">결제하기</button>
+        </a>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 모든 체크박스와 선택된 상품 목록 UL, 총 가격 요소 가져오기
+      const checkboxes = document.querySelectorAll('.cart-left input[type="checkbox"]');
+      const selectedList = document.querySelector('.selected-items ul');
+      const totalPriceElem = document.querySelector('.total-price');
+      const checkoutLink = document.getElementById('checkoutLink');
+      const checkoutButton = document.getElementById('checkoutButton');
+
+      // 총 가격 업데이트 함수
+      function updateCart() {
+        selectedList.innerHTML = '';
+        let total = 0;
+        checkboxes.forEach(function(checkbox) {
+          if (checkbox.checked) {
+            const productBox = checkbox.closest('.product-box');
+            const title = productBox.querySelector('.product-title').innerText;
+            const priceText = productBox.querySelector('.product-price').innerText; // 예: "10,000 원"
+            const priceNumber = parseInt(priceText.replace(/[^\d]/g, ''), 10) || 0;
+            total += priceNumber;
+            const li = document.createElement('li');
+            li.textContent = title + ' - ' + priceText;
+            selectedList.appendChild(li);
+          }
+        });
+        totalPriceElem.textContent = '총 가격: ' + total.toLocaleString() + ' 원';
+      }
+
+      checkboxes.forEach(function(checkbox) {
+        checkbox.addEventListener('change', updateCart);
+      });
+
+      // 초기화: 아무것도 선택 안된 상태로 표시
+      checkboxes.forEach(function(checkbox) {
+        checkbox.checked = false;
+      });
+      updateCart();
+
+      // 결제하기 버튼 클릭 이벤트: 선택된 상품이 없으면 경고 팝업
+      checkoutButton.addEventListener('click', function(e) {
+        let hasSelection = false;
+        checkboxes.forEach(function(checkbox) {
+          if (checkbox.checked) {
+            hasSelection = true;
+          }
+        });
+        if (!hasSelection) {
+          alert("상품을 선택하시오");
+          e.preventDefault(); // 링크 이동 취소
+        }
+      });
+    });
+  </script>
+</th:block>
+</body>
+</html>

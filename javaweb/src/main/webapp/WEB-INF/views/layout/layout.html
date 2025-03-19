@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+<meta charset="UTF-8">
+<title>layout</title>
+<link rel="stylesheet" th:href="@{/static/home/css/style.css}" />
+<!-- <link rel="shoucut icon" href="/home/image/favicon-16x16.png"> -->
+<!-- <th:block layout:fragment="head"></th:block>-->
+</head>
+<body>
+<th:block th:replace="~{fragments/header :: header}"></th:block>
+<main>
+<th:block layout:fragment="content"></th:block>
+</main>
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+</body>
+</html>

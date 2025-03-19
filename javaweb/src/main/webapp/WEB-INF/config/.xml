@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context 
+                           http://www.springframework.org/schema/context/spring-context.xsd">
+    
+    <!-- cart 관련 컴포넌트 스캔 -->
+    <context:component-scan base-package="cart"/>
+    
+    <!-- Cart Service 및 Mapper 설정 -->
+    <bean id="cartService" class="cart.service.CartService">
+        <property name="cartMapper" ref="cartMapper"/>
+    </bean>
+    
+    <bean id="cartMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+        <property name="mapperInterface" value="cart.repository.CartMapper"/>
+        <property name="sqlSessionFactory" ref="sqlSessionFactory"/>
+    </bean>
+</beans>
