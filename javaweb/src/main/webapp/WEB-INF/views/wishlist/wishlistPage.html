@@ -2,36 +2,32 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
+
 <head>
     <meta charset="UTF-8">
-    <title>Wishlist</title>
-    <link rel="stylesheet" th:href="@{/static/wishlist/css/wishlist.css}" />
+    <title>찜 목록</title>
+    <link rel="stylesheet" th:href="@{/static/wishlist/css/style.css}" />
 </head>
+
 <body>
 <th:block layout:fragment="content">
-    <div class="wishlist-page">
-        <h2>Wishlist</h2>
-        <!-- 찜 목록이 비어있을 경우 -->
-        <div th:if="${#lists.isEmpty(wishlistItems)}" class="empty-wishlist">
-            <p>찜 목록에 상품이 없습니다.</p>
+    <div class="wishlist-container">
+        <h2>찜 목록</h2>
+
+        <div th:if="${wishlistItems == null or #lists.isEmpty(wishlistItems)}">
+            <p>찜한 상품이 없습니다.</p>
         </div>
 
-        <!-- 찜 목록이 있을 경우 -->
-        <table th:if="${!#lists.isEmpty(wishlistItems)}" class="wishlist-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>상품명</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="item : ${wishlistItems}">
-                    <td th:text="${item.id}">1</td>
-                    <td th:text="${item.productName}">상품명 예시</td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="wishlist-grid">
+            <div class="wishlist-card" th:each="item : ${wishlistItems}">
+                <img th:src="@{/static/{imgPath}(imgPath=${item.imageUrl})}" alt="상품 이미지" />
+                <h3 th:text="${item.productName}">상품 이름</h3>
+                <p class="wishlist-price" th:text="${#numbers.formatInteger(item.price, 0, 'COMMA')} + '원'">가격</p>
+                <!-- 다른 액션 추가 가능 -->
+            </div>
+        </div>
     </div>
 </th:block>
 </body>
+
 </html>

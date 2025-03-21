@@ -8,7 +8,5 @@ import java.util.List;
 
 @Repository
 public interface WishlistRepository extends JpaRepository<WishlistItem, Integer> {
-
-    // memberId로 위시리스트 아이템 조회
-    List<WishlistItem> findByMemberId(int memberId);
+    List<WishlistItem> findByMemberId(Integer memberId);
 }

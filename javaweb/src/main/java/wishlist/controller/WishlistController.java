@@ -1,26 +1,41 @@
 package wishlist.controller;
 
-import wishlist.service.WishlistService;
-import wishlist.model.WishlistItem;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import java.util.List;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import wishlist.model.WishlistItem;
+import wishlist.service.WishlistService;
 
 @Controller
+@RequestMapping("/wishlist")
 public class WishlistController {
     
 	@Autowired
     private WishlistService wishlistService;
     
+	
     @GetMapping("/wishlist")
     public String wishlistPage(@RequestParam(value="memberId", defaultValue="1") int memberId, Model model) {
         List<WishlistItem> wishlistItems = wishlistService.getWishlistItems(memberId);
         model.addAttribute("wishlistItems", wishlistItems);
         return "wishlist/wishlistPage";
+    }
+    
+    @PostMapping("/add")
+    @ResponseBody
+    public String addToWishlist(@RequestParam("productId") Long productId,
+                                @RequestParam(value = "memberId", defaultValue = "1") int memberId) {
+
+        wishlistService.addToWishlist(productId, memberId);
+        return "success";
     }
     
 	/*
@@ -34,8 +49,12 @@ public class WishlistController {
 CREATE TABLE WISHLIST_ITEM (
     ID NUMBER PRIMARY KEY,
     MEMBER_ID NUMBER NOT NULL,
-    PRODUCT_NAME VARCHAR2(100)
+    PRODUCT_ID NUMBER NOT NULL,
+    PRODUCT_NAME VARCHAR2(100),
+    PRICE NUMBER,
+    IMAGE_URL VARCHAR2(255)
 );
+
 
 //데이터 삽입
 INSERT INTO WISHLIST_ITEM (ID, MEMBER_ID, PRODUCT_NAME)
@@ -47,9 +66,7 @@ VALUES (2, 101, '찜한 상품 2');
 COMMIT;
 
 
-	CREATE SEQUENCE wishlist_item_seq START WITH 1 INCREMENT BY 1;
+//시퀸스 삭제
+DROP SEQUENCE WISHLIST_ITEM_SEQ;
 
-	-- 시퀀스 사용해서 insert하고 싶으면
-	INSERT INTO WISHLIST_ITEM (id, member_id, product_name)
-	VALUES (wishlist_item_seq.NEXTVAL, 1, '찜 상품 A');
 */

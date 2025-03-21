@@ -9,6 +9,12 @@ import java.util.List;
 @Repository
 public interface CartRepository extends JpaRepository<CartItem, Integer> {
 
-    // memberId로 장바구니 목록 조회 (memberId에 맞는 필드명 사용)
+    // memberId로 장바구니 목록 조회
     List<CartItem> findByMemberId(Integer memberId);
+    
+    //다중 삭제
+    void deleteAllByIdIn(List<Integer> ids);
+
 }
+
+

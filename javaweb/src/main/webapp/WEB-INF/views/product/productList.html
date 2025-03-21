@@ -7,6 +7,9 @@
     <meta charset="UTF-8">
     <title>상품 목록</title>
     <link rel="stylesheet" th:href="@{/static/product/css/style.css}" />
+    
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 </head>
 
 <body>
@@ -31,65 +34,112 @@
 
                 <!-- 버튼 영역 -->
                 <div class="product-actions">
-                    <!-- 장바구니 추가 -->
-                     <button type="button" th:onclick="'addToCart(' + ${product.id} + ')'">장바구니 담기</button>
-
-                    <!-- 찜하기 추가 -->
-                    <button type="button" th:onclick="'addToWishlist(' + ${product.id} + ')'">찜하기</button>
-
-                    <!-- 상세페이지 이동 -->
+                
+                	<!-- 장바구니 -->
+                    <button type="button"
+                            class="add-to-cart-btn"
+                            th:data-product-id="${product.id}">장바구니 담기</button>
+					<!-- 찜-->
+                    <button type="button"
+                            class="add-to-wishlist-btn"
+                            th:data-product-id="${product.id}">찜하기</button>
+					<!-- 상세목록 -->	
                     <a th:href="@{'/product/detail/' + ${product.id}}" class="product-detail-link">상세보기</a>
+                </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- 자바스크립트로 비동기 처리 및 팝업 -->
     <script type="text/javascript">
-        // 장바구니 추가 후 confirm 처리
-        function addToCart(productId) {
-            fetch('/cart/add?productId=' + productId, {
-                method: 'POST'
-            })
-            .then(response => {
-                if (response.ok) {
-                    if (confirm('장바구니에 상품이 담겼습니다.\n장바구니로 이동하시겠습니까?')) {
-                        window.location.href = '/cart';  // 장바구니 페이지로 이동
-                    } else {
-                        alert('상품이 장바구니에 담겼습니다.');
-                    }
-                } else {
-                    alert('장바구니 담기에 실패했습니다.');
-                }
-            })
-            .catch(error => {
-                console.error('에러:', error);
-                alert('서버 오류가 발생했습니다.');
-            });
-        }
+        // 장바구니
+        document.addEventListener('DOMContentLoaded', function() {
+        	console.log("DOMContentLoaded 실행됨");
+        
+            const cartButtons = document.querySelectorAll('.add-to-cart-btn');
+            const wishlistButtons = document.querySelectorAll('.add-to-wishlist-btn');
 
-        // 찜하기 추가 후 confirm 처리
-        function addToWishlist(productId) {
-            fetch('/wishlist/add?productId=' + productId, {
-                method: 'POST'
-            })
-            .then(response => {
-                if (response.ok) {
-                    if (confirm('찜 목록에 상품이 추가되었습니다.\n찜 목록 페이지로 이동하시겠습니까?')) {
-                        window.location.href = '/wishlist';  // 찜 목록 페이지로 이동
-                    } else {
-                        alert('상품이 찜 목록에 추가되었습니다.');
-                    }
-                } else {
-                    alert('찜 목록 추가에 실패했습니다.');
-                }
-            })
-            .catch(error => {
-                console.error('에러:', error);
-                alert('서버 오류가 발생했습니다.');
+            //CSRF 토큰 및 헤더 값 가져오기
+            const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+            //장바구니 추가 기능
+            cartButtons.forEach(button => {
+            	const productId = button.getAttribute('data-product-id');
+                console.log('장바구니 버튼 productId:', productId);
+
+                button.addEventListener('click', function() {
+                    console.log('🛒 장바구니 추가 시도! productId:', productId);
+                    
+                    fetch('/cart/add', {
+				        method: 'POST',
+				        headers: {
+				            'Content-Type': 'application/x-www-form-urlencoded',
+				            [csrfHeader]: csrfToken
+				        },
+				        body: new URLSearchParams({
+				            productId: productId,
+				            memberId: 1
+				        })
+				    })
+				    .then(response => {
+				        if (response.ok) {
+				            if (confirm('장바구니에 상품이 담겼습니다.\n장바구니로 이동하시겠습니까?')) {
+				                window.location.href = '/cart?memberId=1';  // 장바구니 페이지로 이동
+				            } else {
+				                alert('상품이 장바구니에 담겼습니다.');
+				            }
+				        } else {
+				            alert('❌ 장바구니 추가 실패');
+				        }
+				    })
+				    .catch(error => {
+				        console.error('🚨 에러 발생:', error);
+				        alert('서버 오류가 발생했습니다.');
+				    });
+                });
             });
-        }
-    </script>
+
+        		// 찜
+                wishlistButtons.forEach(button => {
+                	const productId = button.getAttribute('data-product-id');
+                	console.log('찜 버튼 productId:', productId);
+                	
+                    button.addEventListener('click', function() {
+                        console.log('찜하기 추가 시도! productId:', productId);
+
+                        fetch('/wishlist/add', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                [csrfHeader]: csrfToken
+                            },
+                            body: new URLSearchParams({
+                                productId: productId,
+                                memberId: 1
+                            })
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                if (confirm('찜 목록에 상품이 추가되었습니다.\n찜 목록 페이지로 이동하시겠습니까?')) {
+                                    window.location.href = '/wishlist';
+                                } else {
+                                    alert('상품이 찜 목록에 추가되었습니다.');
+                                }
+                            } else {
+                            	 console.log('❌ 찜하기 추가 실패');
+                                alert('찜 목록 추가에 실패했습니다.');
+                            }
+                        })
+                        .catch(error => {
+                        	console.error('🚨 에러 발생:', error);
+                            console.error('에러:', error);
+                            alert('서버 오류가 발생했습니다.');
+                        });
+                    });
+                });
+            });
+  </script>
     
 </th:block>
 </body>

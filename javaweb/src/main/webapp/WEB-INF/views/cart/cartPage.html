@@ -6,23 +6,36 @@
   <meta charset="UTF-8">
   <title>장바구니</title>
   <link rel="stylesheet" th:href="@{/static/cart/css/style.css}" />
+  
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 </head>
 <body>
 <th:block layout:fragment="content">
   <div class="cart-content">
     <h2>장바구니</h2>
-    
     <div class="cart-container">
-      <!-- 왼쪽: 상품 목록 -->
-      <div class="cart-left">
-	  <div class="product-box" th:each="item : ${cartItems}">
-	    <input type="checkbox" name="selectedIds" th:value="${item.id}">
-	    
-	    <div class="product-title" th:text="${item.productName}">상품 이름</div>
-	    
-	    <img class="product-image" th:src="@{'/static/' + ${item.imageUrl}}" alt="상품 이미지">
-	    
-	    <div class="product-price" th:text="${#numbers.formatInteger(item.price, 0, 'COMMA')} + ' 원'">가격</div>
+	    <div class="cart-left">
+	        <!-- 장바구니 비었을 때 -->
+	        <div th:if="${cartItems == null or #lists.isEmpty(cartItems)}" class="no-items">
+	          <p>장바구니에 상품이 없습니다.</p>
+	        </div>
+	        
+	      <!-- 왼쪽: 상품 목록 -->
+		  <div class="product-box" th:each="item : ${cartItems}">
+		  <input type="checkbox" name="selectedIds" th:value="${item.id}">
+		    
+		    <div class="product-title" th:text="${item.productName}">상품 이름</div>
+		    <img class="product-image" th:src="@{'/static/' + ${item.imageUrl}}" alt="상품 이미지">
+		    <div class="product-price" th:text="${#numbers.formatInteger(item.price, 0, 'COMMA')} + ' 원'">가격</div>
+		  
+		 <!-- 삭제 버튼 -->
+	    <button type="button"
+	        th:attr="data-id=${item.id}"
+	        class="delete-btn">
+		    삭제
+		</button>
+
 	  </div>
 	</div>
 	
@@ -31,13 +44,13 @@
         <h3>선택된 상품</h3>
         <div class="selected-items">
           <ul>
-            <!-- 초기에는 아무것도 표시되지 않음 -->
+            <li th:if="${cartItems == null or #lists.isEmpty(cartItems)}">선택된 상품이 없습니다.</li>
           </ul>
         </div>
         <div class="total-price">총 가격: 0 원</div>
         
         <!-- 결제하기 버튼; 클릭 시 pay.html로 이동 (선택이 없으면 팝업) -->
-        <a href="pay.html" id="checkoutLink">
+        <a th:href="@{/pay}" id="checkoutLink">
           <button type="button" class="checkout-btn" id="checkoutButton">결제하기</button>
         </a>
       </div>
@@ -83,19 +96,53 @@
       updateCart();
 
       // 결제하기 버튼 클릭 이벤트: 선택된 상품이 없으면 경고 팝업
-      checkoutButton.addEventListener('click', function(e) {
+      checkoutLink.addEventListener('click', function(e) {
         let hasSelection = false;
+        
         checkboxes.forEach(function(checkbox) {
           if (checkbox.checked) {
             hasSelection = true;
           }
         });
+        
         if (!hasSelection) {
           alert("상품을 선택하시오");
           e.preventDefault(); // 링크 이동 취소
         }
       });
     });
+    
+    function deleteCartItem(cartItemId) {
+        if (confirm("정말 삭제하시겠습니까?")) {
+        	
+        	const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        	const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+            fetch('/cart/delete', {
+                method: 'POST',
+                headers: {
+                	'Content-Type': 'application/x-www-form-urlencoded',
+                    [csrfHeader]: csrfToken
+                },
+                body: new URLSearchParams({
+                    cartItemId: cartItemId
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('상품이 장바구니에서 삭제되었습니다.');
+                    window.location.reload();  // 새로고침해서 최신 데이터 반영
+                } else {
+                    alert('삭제에 실패했습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('🚨 삭제 에러:', error);
+                alert('서버 오류가 발생했습니다.');
+            });
+        }
+    }
+
   </script>
 </th:block>
 </body>

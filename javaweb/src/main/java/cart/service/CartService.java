@@ -25,17 +25,32 @@ public class CartService {
         return cartRepository.findByMemberId(memberId);
     }
 
- // 장바구니에 상품 추가
+ // 장바구니에 상품 추가    
     public void addToCart(Long productId, int memberId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다."));
+        System.out.println("장바구니 추가 시도: productId=" + productId + ", memberId=" + memberId);
 
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> {
+                System.out.println("상품 못 찾음! productId: " + productId);
+                return new IllegalArgumentException("상품을 찾을 수 없습니다.");
+            });
+    
         CartItem cartItem = new CartItem();
         cartItem.setMemberId(memberId);
+        cartItem.setProductId(productId);
         cartItem.setProductName(product.getName());
         cartItem.setQuantity(1); // 기본 수량 1로 넣음
         cartItem.setPrice(product.getPrice());
+        cartItem.setImageUrl(product.getImageUrl());
 
         cartRepository.save(cartItem);
+        System.out.println("장바구니에 추가 완료: " + cartItem);
 	}
+    
+    public void deleteCartItem(Integer cartItemId) {
+        cartRepository.deleteById(cartItemId);
+    }
+    
+    
+
 }

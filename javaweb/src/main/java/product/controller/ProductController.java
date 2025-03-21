@@ -48,7 +48,8 @@ VALUES (1, '상품 A', 10000, '상품 설명 A', 'images/product1.png');
 INSERT INTO PRODUCTS (ID, NAME, PRICE, DESCRIPTION, IMAGE_URL)
 VALUES (2, '상품 B', 15000, '상품 설명 B', 'images/product2.png');
 
+INSERT INTO PRODUCTS (ID, NAME, PRICE, DESCRIPTION, IMAGE_URL)
+VALUES (3, '상품 C', 15000, '상품 설명 B', 'images/product3.png');
+
 COMMIT;
-
-
 */
